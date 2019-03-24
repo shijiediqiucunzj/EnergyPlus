@@ -2,53 +2,38 @@
 #include <cstddef>
 #include <fmi2FunctionTypes.h>
 
-//typedef struct {
-//  fmi2Boolean newDiscreteStatesNeeded;
-//  fmi2Boolean terminateSimulation;
-//  fmi2Boolean nominalsOfContinuousStatesChanged;
-//  fmi2Boolean valuesOfContinuousStatesChanged;
-//  fmi2Boolean nextEventTimeDefined;
-//  fmi2Real nextEventTime; // next event if nextEventTimeDefined=fmi2True
-//} fmi2EventInfo;
-
 extern "C" {
 
-EPFMI_API unsigned int instantiate(const char *input,
-                         const char *weather,
-                         const char *idd,
-                         const char *instanceName,
-                         const char ** parameterNames,
-                         const unsigned int parameterValueReferences[],
-                         size_t nPar,
-                         const char ** inputNames,
-                         const unsigned int inputValueReferences[],
-                         size_t nInp,
-                         const char ** outputNames,
-                         const unsigned int outputValueReferences[],
-                         size_t nOut,
-                         const char *log);
+EPFMI_API fmi2Component fmi2Instantiate(fmi2String instanceName,
+  fmi2Type fmuType,
+  fmi2String fmuGUID,
+  fmi2String fmuResourceLocation,
+  const fmi2CallbackFunctions* functions,
+  fmi2Boolean visible,
+  fmi2Boolean loggingOn);
 
-EPFMI_API unsigned int setupExperiment(double tStart,
-                             bool stopTimeDefined,
-                             const char *log);
+EPFMI_API fmi2Status fmi2SetupExperiment(fmi2Component c,
+  fmi2Boolean toleranceDefined,
+  fmi2Real tolerance,
+  fmi2Real startTime,
+  fmi2Boolean stopTimeDefined,
+  fmi2Real stopTime);
 
-EPFMI_API unsigned int setTime(double time,
-                     const char *log);
+EPFMI_API fmi2Status fmi2SetTime(fmi2Component c, fmi2Real time);
 
-EPFMI_API unsigned int setVariables(const unsigned int valueReferences[],
-                          const double variablePointers[],
-                          size_t nVars1,
-                          const char *log);
+EPFMI_API fmi2Status fmi2SetReal(fmi2Component c,
+  const fmi2ValueReference vr[],
+  size_t nvr,
+  const fmi2Real values[]);
 
-EPFMI_API unsigned int getVariables(const unsigned int valueReferences[],
-                          double variablePointers[],
-                          size_t nVars2,
-                          const char *log);
+EPFMI_API fmi2Status fmi2GetReal(fmi2Component c,
+  const fmi2ValueReference vr[],
+  size_t nvr,
+  fmi2Real values[]);
 
-EPFMI_API unsigned int getNextEventTime(fmi2EventInfo *eventInfo,
-                              const char *log);
+EPFMI_API fmi2Status fmi2NewDiscreteStates(fmi2Component  c, fmi2EventInfo* fmi2eventInfo);
 
-EPFMI_API unsigned int terminateSim(const char *log);
+EPFMI_API fmi2Status fmi2Terminate(fmi2Component c);
 
 }
 

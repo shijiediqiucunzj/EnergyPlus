@@ -484,14 +484,14 @@ namespace SimulationManager {
 
         while (Available) {
 
-            if (epstatus == EPStatus::TERMINATING) break;
+            if (epcomp->epstatus == EPStatus::TERMINATING) break;
 
             GetNextEnvironment(Available, ErrorsFound);
 
             if (!Available) break;
             if (ErrorsFound) break;
             if ((KindOfSim != ksRunPeriodWeather)) continue;
-            if (epstatus == EPStatus::TERMINATING) break;
+            if (epcomp->epstatus == EPStatus::TERMINATING) break;
 
             ++EnvCount;
 
@@ -523,7 +523,7 @@ namespace SimulationManager {
 
             while ((DayOfSim < NumOfDayInEnvrn) || (WarmupFlag)) { // Begin day loop ...
 
-                if (epstatus == EPStatus::TERMINATING) break;
+                if (epcomp->epstatus == EPStatus::TERMINATING) break;
                 if (sqlite) sqlite->sqliteBegin(); // setup for one transaction per day
 
                 ++DayOfSim;
@@ -566,12 +566,12 @@ namespace SimulationManager {
 
                 for (HourOfDay = 1; HourOfDay <= 24; ++HourOfDay) { // Begin hour loop ...
 
-                    if (epstatus == EPStatus::TERMINATING) break;
+                    if (epcomp->epstatus == EPStatus::TERMINATING) break;
                     BeginHourFlag = true;
                     EndHourFlag = false;
 
                     for (TimeStep = 1; TimeStep <= NumOfTimeStepInHour; ++TimeStep) {
-                        if (epstatus == EPStatus::TERMINATING) break;
+                        if (epcomp->epstatus == EPStatus::TERMINATING) break;
 
                         if (AnySlabsInModel || AnyBasementsInModel) {
                             SimulateGroundDomains(false);

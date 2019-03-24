@@ -111,6 +111,7 @@
 #include <ZoneContaminantPredictorCorrector.hh>
 #include <ZoneEquipmentManager.hh>
 #include <ZoneTempPredictorCorrector.hh>
+//#include "../FMI/EPComponent.hpp"
 
 namespace EnergyPlus {
 
@@ -403,7 +404,7 @@ namespace HVACManager {
         Real64 PreTime = DataGlobals::PreSimTime;
         FirstTimeStepSysFlag = true;
 
-        while (fmutimeinfo.current < DataGlobals::NextSimTime) {
+        while (epcomp->currentTime < epcomp->nextSimTime) {
             UpdateInternalGainValues(true, true);
 
             BeginTimeStepFlag = false;
@@ -495,19 +496,79 @@ namespace HVACManager {
 
             FirstTimeStepSysFlag = false;
 
+            auto zoneNum = [](std::string zoneName) {
+              std::transform(zoneName.begin(), zoneName.end(), zoneName.begin(), ::toupper);
+              for ( int i = 0; i < EnergyPlus::DataGlobals::NumOfZones; ++i ) {
+                if ( EnergyPlus::DataHeatBalance::Zone[i].Name == zoneName ) {
+                  return i + 1;
+                }
+              }
+            
+              return 0;
+            };
+
+            // Exchange Data
+            for( auto & varmap : epcomp->variables ) {
+              auto & var = varmap.second; 
+              auto varZoneNum = zoneNum(var.zoneName);
+              switch ( var.type ) {
+                case VariableType::INPUT: {
+                  if ( var.varName == "T" ) {
+                    EnergyPlus::DataHeatBalFanSys::ZT( varZoneNum ) = var.value;
+                    EnergyPlus::DataHeatBalFanSys::MAT( varZoneNum ) = var.value;
+                  } else {
+                    std::cout << "input named " << var.varName << " is not valid" << std::endl;
+                  }
+                  break;
+                }
+                case VariableType::PARAMETER: {
+                  if ( var.varName == "V" ) {
+                    var.value = EnergyPlus::DataHeatBalance::Zone( varZoneNum ).Volume;
+                  } else if ( var.varName == "AFlo" ) {
+                    var.value = EnergyPlus::DataHeatBalance::Zone( varZoneNum ).FloorArea;
+                  } else if ( var.varName == "mSenFac" ) {
+                    var.value = EnergyPlus::DataHeatBalance::Zone( varZoneNum ).ZoneVolCapMultpSens;
+                  } else {
+                    std::cout << "parameter named " << var.varName << " is not valid" << std::endl;
+                  }
+                  break;
+                }
+              }
+            }
+
+            for( auto & varmap : epcomp->variables ) {
+              auto & var = varmap.second; 
+              auto varZoneNum = zoneNum(var.zoneName);
+              switch ( var.type ) {
+                case VariableType::OUTPUT: {
+                  if ( var.varName == "QConSen_flow" ) {
+                    var.value = ZoneTempPredictorCorrector::HDot( varZoneNum );
+                  } else {
+                    std::cout << "output named " << var.varName << " is not valid" << std::endl;
+                  }
+                  break;
+                }
+              }
+            }
+
+            //// Update each zone HDot
+            //for (int ZoneNum = 1; ZoneNum <= NumOfZones; ZoneNum++) {
+            //  DataHeatBalFanSys::HDot( ZoneNum ) = ZoneTempPredictorCorrector::HDot( ZoneNum );
+            //}
+
             // Signal that the step is done
             {
-                std::unique_lock<std::mutex> lk(time_mutex);
-                epstatus = EPStatus::IDLE;
+                std::unique_lock<std::mutex> lk(epcomp->time_mutex);
+                epcomp->epstatus = EPStatus::IDLE;
             }
-            time_cv.notify_one();
+            epcomp->time_cv.notify_one();
 
             // Wait until we are signaled to make another step
             {
-                std::unique_lock<std::mutex> lk(time_mutex);
-                time_cv.wait(lk, []() { return ((epstatus == EPStatus::WORKING) || (epstatus == EPStatus::TERMINATING)); });
+                std::unique_lock<std::mutex> lk(epcomp->time_mutex);
+                epcomp->time_cv.wait(lk, []() { return ((epcomp->epstatus == EPStatus::WORKING) || (epcomp->epstatus == EPStatus::TERMINATING)); });
 
-                if (epstatus == EPStatus::TERMINATING) {
+                if (epcomp->epstatus == EPStatus::TERMINATING) {
                     // Make this cleaner
                     break;
                 }

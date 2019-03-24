@@ -202,6 +202,11 @@
 #include <DataStringGlobals.hh>
 #include <DataSystemVariables.hh>
 #include <DataTimings.hh>
+#include "ZoneTempPredictorCorrector.hh"
+#include "DataGlobals.hh"
+#include "DataHeatBalFanSys.hh"
+#include "DataHeatBalance.hh"
+#include "DataEnvironment.hh"
 #include <DisplayRoutines.hh>
 #include <EnergyPlusPgm.hh>
 #include <FileSystem.hh>
@@ -215,6 +220,8 @@
 #include <ScheduleManager.hh>
 #include <SimulationManager.hh>
 #include <UtilityRoutines.hh>
+#include <FMIDataGlobals.hh>
+#include <ZoneTempPredictorCorrector.hh>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -450,6 +457,14 @@ int RunEnergyPlus(std::string const & filepath)
     try {
         EnergyPlus::inputProcessor = InputProcessor::factory();
         EnergyPlus::inputProcessor->processInput();
+
+
+        //// Signal that the step is done
+        //{
+        //    std::unique_lock<std::mutex> lk(epcomp->time_mutex);
+        //    epcomp->epstatus = EPStatus::IDLE;
+        //}
+        //epcomp->time_cv.notify_one();
 
         ManageSimulation();
 

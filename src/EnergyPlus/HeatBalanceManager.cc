@@ -5414,6 +5414,7 @@ namespace HeatBalanceManager {
         ZTAV.dimension(NumOfZones, 23.0);
         ZTAVComf.dimension(NumOfZones, 23.0);
         ZT.dimension(NumOfZones, 23.0);
+        HDot.dimension(NumOfZones, 0.0);
         TempTstatAir.dimension(NumOfZones, 23.0);
         MAT.dimension(NumOfZones, 23.0);
         ZoneTMX.dimension(NumOfZones, 23.0);

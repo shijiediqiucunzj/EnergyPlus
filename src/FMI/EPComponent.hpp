@@ -45,16 +45,70 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef FMIDataGlobals_hh_INCLUDED
-#define FMIDataGlobals_hh_INCLUDED
+#ifndef EPComponent_hh_INCLUDED
+#define EPComponent_hh_INCLUDED
 
-#include "../FMI/EPComponent.hpp"
+#include <string>
+#include <vector>
+#include <map>
+#include <thread>
+#include <mutex>
+#include <sstream>
+#include <condition_variable>
+#include <fmi2FunctionTypes.h>
+#include "EnergyPlus.hh"
 
-namespace EnergyPlus {
+enum class VariableType { INPUT, OUTPUT, PARAMETER };
 
-extern thread_local EPComponent * epcomp;
+struct Variable {
+  Variable(const char * name, VariableType _type)
+    : type(_type)
+  {
+    std::vector<std::string> strings;
+    std::istringstream f(name);
+    std::string s;    
+    while (std::getline(f, s, ',')) {
+        strings.push_back(s);
+    }
 
-}
+    zoneName = strings[0];
+    varName = strings[1];
+  };
+
+  std::string zoneName;
+  std::string varName;
+  Real64 value;
+  VariableType type;
+};
+
+enum class EPStatus { WORKING, IDLE, TERMINATING };
+
+struct EPComponent {
+  EPComponent() {}
+  EPComponent( const EPComponent& ) = delete;
+  EPComponent( EPComponent&& ) {}
+
+  fmi2String instanceName;
+
+  fmi2String weatherFilePath;
+  fmi2String iddPath;
+  fmi2String idfInputPath;
+
+  fmi2Boolean toleranceDefined;
+  fmi2Real tolerance;
+  fmi2Real startTime;
+  fmi2Boolean stopTimeDefined;
+  fmi2Real stopTime;
+  fmi2Real currentTime;
+  fmi2Real nextSimTime;
+
+  std::map<unsigned int, Variable> variables;
+
+  std::thread simthread;
+  EPStatus epstatus;
+  std::condition_variable time_cv;
+  std::mutex time_mutex;
+};
 
 #endif
 

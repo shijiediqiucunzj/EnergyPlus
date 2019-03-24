@@ -91,6 +91,7 @@ namespace DataHeatBalFanSys {
     extern Array1D<Real64> MAT;          // MEAN AIR TEMPARATURE (C)
     extern Array1D<Real64> TempTstatAir; // temperature of air near the thermo stat
     extern Array1D<Real64> ZT;           // Zone Air Temperature Averaged over the System Time Increment
+    extern Array1D<Real64> HDot;         // Zone Heat Flux
     extern Array1D<Real64> XMAT;         // TEMPORARY ZONE TEMPERATURE TO TEST CONVERGENCE
     extern Array1D<Real64> XM2T;
     extern Array1D<Real64> XM3T;

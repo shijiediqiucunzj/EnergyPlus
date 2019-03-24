@@ -71,6 +71,7 @@
 #include <DataStringGlobals.hh>
 #include <DataSurfaces.hh>
 #include <DataSystemVariables.hh>
+#include <FMIDataGlobals.hh>
 #include <DisplayRoutines.hh>
 #include <EMSManager.hh>
 #include <General.hh>
@@ -2501,7 +2502,7 @@ namespace WeatherManager {
         SimTimeSteps = (DayOfSim - 1) * 24 * NumOfTimeStepInHour + (HourOfDay - 1) * NumOfTimeStepInHour + TimeStep;
         PreSimTime = SimTime;
         SimTime = SimTimeSteps * TimeStepZoneSec;
-        NextSimTime = SimTime + TimeStepZoneSec;
+        epcomp->nextSimTime = SimTime + TimeStepZoneSec;
 
         GroundTemp = siteBuildingSurfaceGroundTempsPtr->getGroundTempAtTimeInMonths(0, Month);
         GroundTempKelvin = GroundTemp + KelvinConv;

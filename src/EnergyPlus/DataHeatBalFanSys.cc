@@ -99,6 +99,7 @@ namespace DataHeatBalFanSys {
     Array1D<Real64> MAT;          // MEAN AIR TEMPARATURE (C)
     Array1D<Real64> TempTstatAir; // temperature of air near the thermo stat
     Array1D<Real64> ZT;           // Zone Air Temperature Averaged over the System Time Increment
+    Array1D<Real64> HDot;           
     Array1D<Real64> XMAT;         // TEMPORARY ZONE TEMPERATURE TO TEST CONVERGENCE
     Array1D<Real64> XM2T;
     Array1D<Real64> XM3T;
@@ -253,6 +254,7 @@ namespace DataHeatBalFanSys {
         MAT.deallocate();
         TempTstatAir.deallocate();
         ZT.deallocate();
+        HDot.deallocate();
         XMAT.deallocate();
         XM2T.deallocate();
         XM3T.deallocate();
