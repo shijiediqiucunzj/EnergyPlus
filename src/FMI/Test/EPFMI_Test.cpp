@@ -4,6 +4,8 @@
 #include "test-config.h"
 #include "../EnergyPlus/DataEnvironment.hh"
 
+EPComponent * createComponent() {
+};
 
 TEST( EPFMI, static_lib ) {
 
@@ -56,6 +58,55 @@ TEST( EPFMI, static_lib ) {
   epcomp->variables.emplace(28,Variable("Perimeter_ZN_3,mSenFac", VariableType::PARAMETER));
   epcomp->variables.emplace(29,Variable("Perimeter_ZN_4,mSenFac", VariableType::PARAMETER));
 
+  auto comp2 = fmi2Instantiate("Building2", // instanceName
+    fmi2ModelExchange, // fmuType
+    "", // fmuGUID
+    "", // fmuResourceLocation
+    NULL, // functions
+    true, // visible
+    false); // loggingOn
+
+  EPComponent * epcomp2 = static_cast<EPComponent*>(comp2);
+
+  epcomp2->weatherFilePath = weather;
+  epcomp2->iddPath = idd;
+  epcomp2->idfInputPath = input;
+
+  epcomp2->variables.emplace(0,Variable("Attic,T", VariableType::INPUT));
+  epcomp2->variables.emplace(1,Variable("Core_ZN,T", VariableType::INPUT));
+  epcomp2->variables.emplace(2,Variable("Perimeter_ZN_1,T", VariableType::INPUT));
+  epcomp2->variables.emplace(3,Variable("Perimeter_ZN_2,T", VariableType::INPUT));
+  epcomp2->variables.emplace(4,Variable("Perimeter_ZN_3,T", VariableType::INPUT));
+  epcomp2->variables.emplace(5,Variable("Perimeter_ZN_4,T", VariableType::INPUT));
+
+  epcomp2->variables.emplace(6,Variable("Attic,QConSen_flow", VariableType::OUTPUT));
+  epcomp2->variables.emplace(7,Variable("Core_ZN,QConSen_flow", VariableType::OUTPUT));
+  epcomp2->variables.emplace(8,Variable("Perimeter_ZN_1,QConSen_flow", VariableType::OUTPUT));
+  epcomp2->variables.emplace(9,Variable("Perimeter_ZN_2,QConSen_flow", VariableType::OUTPUT));
+  epcomp2->variables.emplace(10,Variable("Perimeter_ZN_3,QConSen_flow", VariableType::OUTPUT));
+  epcomp2->variables.emplace(11,Variable("Perimeter_ZN_4,QConSen_flow", VariableType::OUTPUT));
+
+  epcomp2->variables.emplace(12,Variable("Attic,V", VariableType::PARAMETER));
+  epcomp2->variables.emplace(13,Variable("Core_ZN,V", VariableType::PARAMETER));
+  epcomp2->variables.emplace(14,Variable("Perimeter_ZN_1,V", VariableType::PARAMETER));
+  epcomp2->variables.emplace(15,Variable("Perimeter_ZN_2,V", VariableType::PARAMETER));
+  epcomp2->variables.emplace(16,Variable("Perimeter_ZN_3,V", VariableType::PARAMETER));
+  epcomp2->variables.emplace(17,Variable("Perimeter_ZN_4,V", VariableType::PARAMETER));
+
+  epcomp2->variables.emplace(18,Variable("Attic,AFlo", VariableType::PARAMETER));
+  epcomp2->variables.emplace(19,Variable("Core_ZN,AFlo", VariableType::PARAMETER));
+  epcomp2->variables.emplace(20,Variable("Perimeter_ZN_1,AFlo", VariableType::PARAMETER));
+  epcomp2->variables.emplace(21,Variable("Perimeter_ZN_2,AFlo", VariableType::PARAMETER));
+  epcomp2->variables.emplace(22,Variable("Perimeter_ZN_3,AFlo", VariableType::PARAMETER));
+  epcomp2->variables.emplace(23,Variable("Perimeter_ZN_4,AFlo", VariableType::PARAMETER));
+
+  epcomp2->variables.emplace(24,Variable("Attic,mSenFac", VariableType::PARAMETER));
+  epcomp2->variables.emplace(25,Variable("Core_ZN,mSenFac", VariableType::PARAMETER));
+  epcomp2->variables.emplace(26,Variable("Perimeter_ZN_1,mSenFac", VariableType::PARAMETER));
+  epcomp2->variables.emplace(27,Variable("Perimeter_ZN_2,mSenFac", VariableType::PARAMETER));
+  epcomp2->variables.emplace(28,Variable("Perimeter_ZN_3,mSenFac", VariableType::PARAMETER));
+  epcomp2->variables.emplace(29,Variable("Perimeter_ZN_4,mSenFac", VariableType::PARAMETER));
+
   double tStart = 0.0;
   double tEnd = 86400;
 
@@ -66,7 +117,21 @@ TEST( EPFMI, static_lib ) {
   const unsigned int paramRefs[] = {12}; // Attic,V
   double params[1];
 
+  double outputs2[] = {0.0};
+  const unsigned int outputRefs2[] = {6}; // Attic,QConSen_flow
+  double inputs2[] = {21.0, 21.0,21.0, 21.0, 21.0, 21.0};
+  const unsigned int inputRefs2[] = {0, 1, 2, 3, 4, 5}; // Attic,T...
+  const unsigned int paramRefs2[] = {12}; // Attic,V
+  double params2[1];
+
   fmi2SetupExperiment(epcomp, // component
+    false, // toleranceDefined
+    0, // tolerance
+    tStart, // startTime
+    true, // stopTimeDefined
+    tEnd); // stopTime
+
+  fmi2SetupExperiment(epcomp2, // component
     false, // toleranceDefined
     0, // tolerance
     tStart, // startTime
@@ -116,6 +181,7 @@ TEST( EPFMI, static_lib ) {
   }
 
   fmi2Terminate(epcomp);
+  fmi2Terminate(epcomp2);
 
   std::cout << "epfmi test is now complete" << std::endl;
 }
