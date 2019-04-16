@@ -17,7 +17,7 @@ set(src
 )
 
 add_library( epfmi SHARED ${src} )
-set_target_properties( epfmi PROPERTIES OUTPUT_NAME "epfmi-${ENERGYPLUS_VERSION}" )
+set_target_properties( epfmi PROPERTIES OUTPUT_NAME "epfmi" )
 
 target_link_libraries( epfmi energypluslib )
 
